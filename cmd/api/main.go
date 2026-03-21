@@ -1,17 +1,15 @@
 package main
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"encoding/json"
 	"net/http"
-	"os"
 	"sync"
 
+	"github.com/MouraGabriel53/teste-oauth-go/internal/config"
+	authcontroller "github.com/MouraGabriel53/teste-oauth-go/internal/controller/authController"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 )
 
 var VerifierMap sync.Map
@@ -26,12 +24,6 @@ type GoogleUser struct {
 	Picture       string `json:"picture"`
 }
 
-func generateRandomString(number int) string {
-	b := make([]byte, number)
-	rand.Read(b)
-	return base64.URLEncoding.EncodeToString(b)
-}
-
 func main() {
 
 	err := godotenv.Load(".env")
@@ -41,30 +33,12 @@ func main() {
 
 	r := gin.Default()
 
-	conf := &oauth2.Config{
-		ClientID:     os.Getenv("CLIENT_ID"),
-		ClientSecret: os.Getenv("CLIENT_SECRET"),
-		Endpoint:     google.Endpoint,
-		RedirectURL:  "http://localhost:8080/auth/callback",
-		Scopes: []string{
-			"https://www.googleapis.com/auth/userinfo.email",
-			"https://www.googleapis.com/auth/userinfo.profile",
-		},
-	}
+	conf := config.ConfigurateOauth2()
+
+	authController := authcontroller.NewAuthenticationUser()
 
 	v1 := r.Group("/auth")
 	{
-		v1.GET("/users", func(ctx *gin.Context) {
-			verifier := oauth2.GenerateVerifier()
-
-			state := generateRandomString(32) //Generate random state 
-
-			VerifierMap.Store(state, verifier) //Utilize REDIS
-
-			url := conf.AuthCodeURL(state, oauth2.AccessTypeOnline, oauth2.S256ChallengeOption(verifier)) //ADD S256ChallengeOption to protect against PKCE
-			ctx.Redirect(http.StatusTemporaryRedirect, url)
-		})
-
 		v1.GET("/callback", func(ctx *gin.Context) {
 			code := ctx.Query("code")
 			state := ctx.Query("state")
