@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"os"
@@ -24,9 +26,11 @@ type GoogleUser struct {
 	Picture       string `json:"picture"`
 }
 
-// type GoogleResponse struct {
-// 	User User `json:"user"`
-// }
+func generateRandomString(number int) string {
+	b := make([]byte, number)
+	rand.Read(b)
+	return base64.URLEncoding.EncodeToString(b)
+}
 
 func main() {
 
@@ -53,7 +57,9 @@ func main() {
 		v1.GET("/users", func(ctx *gin.Context) {
 			verifier := oauth2.GenerateVerifier()
 
-			VerifierMap.Store("", verifier) //Utilize REDIS
+			state := generateRandomString(32) //Generate random state 
+
+			VerifierMap.Store(state, verifier) //Utilize REDIS
 
 			url := conf.AuthCodeURL("randomstate", oauth2.AccessTypeOnline, oauth2.S256ChallengeOption(verifier)) //ADD S256ChallengeOption to protect against PKCE
 			ctx.Redirect(http.StatusTemporaryRedirect, url)
@@ -63,20 +69,17 @@ func main() {
 			code := ctx.Query("code")
 			state := ctx.Query("state")
 
-			if state != "randomstate" {
+			value, ok := VerifierMap.Load(state)
+			if !ok {
 				ctx.JSON(http.StatusBadRequest, gin.H{
 					"error": "invalid state",
 				})
 				return
 			}
 
-			var verifier string
+			verifier := value.(string)
 
-			if value, ok := VerifierMap.Load(""); ok {
-				verifier = value.(string)
-
-				VerifierMap.Delete("")
-			}
+			VerifierMap.Delete(state)
 
 			token, err := conf.Exchange(ctx, code, oauth2.VerifierOption(verifier))
 			if err != nil {
