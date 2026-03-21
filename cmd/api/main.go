@@ -7,7 +7,6 @@ import (
 
 	"github.com/MouraGabriel53/teste-oauth-go/internal/configuration"
 	authcontroller "github.com/MouraGabriel53/teste-oauth-go/internal/controller/auth_controller"
-	"github.com/MouraGabriel53/teste-oauth-go/internal/controller/routes"
 	authrepository "github.com/MouraGabriel53/teste-oauth-go/internal/model/repository/auth_repository"
 	authservice "github.com/MouraGabriel53/teste-oauth-go/internal/model/service/auth_service"
 	"github.com/gin-gonic/gin"
@@ -41,7 +40,11 @@ func main() {
 	authservice := authservice.NewAuthenticationServiceInterface(authrepository, googleAuth)
 	authController := authcontroller.NewAuthenticationContollerInterface(authservice)
 
-	routes.AuthRoutes(r, authController.AuthenticateUser)
+	v1 := r.Group("/auth")
+	{
+		v1.GET("/profile", authController.AuthenticateUser)
+		v1.GET("/callback", authController.Callback)
+	}
 
 	v1 := r.Group("/auth")
 	{

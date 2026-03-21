@@ -13,6 +13,7 @@ func NewAuthenticationContollerInterface(service authservice.AuthenticationServi
 
 type AuthenticationControllerInterface interface {
 	AuthenticateUser(ctx *gin.Context)
+	Callback(ctx *gin.Context)
 }
 
 type authenticationControllerInterface struct {
