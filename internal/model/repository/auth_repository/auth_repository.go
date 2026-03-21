@@ -13,6 +13,7 @@ func NewAuthenticationRepositoryInterface(redis *redis.Client) *authenticationRe
 
 type AuthenticationRepositoryInterface interface {
 	SetVerifier(ctx *gin.Context, state, verifier string) (statusCmd *redis.StatusCmd)
+	GetVerifier()
 }
 
 type authenticationRepositoryInterface struct {
