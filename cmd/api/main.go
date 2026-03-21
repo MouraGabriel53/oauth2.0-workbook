@@ -61,7 +61,7 @@ func main() {
 
 			VerifierMap.Store(state, verifier) //Utilize REDIS
 
-			url := conf.AuthCodeURL("randomstate", oauth2.AccessTypeOnline, oauth2.S256ChallengeOption(verifier)) //ADD S256ChallengeOption to protect against PKCE
+			url := conf.AuthCodeURL(state, oauth2.AccessTypeOnline, oauth2.S256ChallengeOption(verifier)) //ADD S256ChallengeOption to protect against PKCE
 			ctx.Redirect(http.StatusTemporaryRedirect, url)
 		})
 
