@@ -15,6 +15,7 @@ func NewAuthenticationServiceInterface(repository authrepository.AuthenticationR
 
 type AuthenticationServiceInterface interface {
 	AuthenticateUser(ctx *gin.Context)
+	Callback(ctx *gin.Context)
 }
 
 type authenticationServiceInterface struct {
