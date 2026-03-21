@@ -4,12 +4,15 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
+
+var VerifierMap sync.Map
 
 type GoogleUser struct {
 	ID            string `json:"id"`
@@ -48,7 +51,11 @@ func main() {
 	v1 := r.Group("/auth")
 	{
 		v1.GET("/users", func(ctx *gin.Context) {
-			url := conf.AuthCodeURL("randomstate")
+			verifier := oauth2.GenerateVerifier()
+
+			VerifierMap.Store("", verifier) //Utilize REDIS
+
+			url := conf.AuthCodeURL("randomstate", oauth2.AccessTypeOnline, oauth2.S256ChallengeOption(verifier)) //ADD S256ChallengeOption to protect against PKCE
 			ctx.Redirect(http.StatusTemporaryRedirect, url)
 		})
 
@@ -63,7 +70,15 @@ func main() {
 				return
 			}
 
-			token, err := conf.Exchange(ctx, code)
+			var verifier string
+
+			if value, ok := VerifierMap.Load(""); ok {
+				verifier = value.(string)
+
+				VerifierMap.Delete("")
+			}
+
+			token, err := conf.Exchange(ctx, code, oauth2.VerifierOption(verifier))
 			if err != nil {
 				ctx.JSON(http.StatusBadRequest, gin.H{
 					"error": "invalid code",
