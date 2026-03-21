@@ -1,4 +1,4 @@
-package config
+package configuration
 
 import (
 	"os"
@@ -12,7 +12,7 @@ var (
 	CLIENT_SECRET = "CLIENT_SECRET"
 )
 
-func ConfigurateOauth2() *oauth2.Config {
+func ConfigureOauth2() *oauth2.Config {
 	return &oauth2.Config{
 		ClientID:     os.Getenv(CLIENT_ID),
 		ClientSecret: os.Getenv(CLIENT_SECRET),

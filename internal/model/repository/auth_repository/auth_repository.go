@@ -1,11 +1,20 @@
 package authrepository
 
-func NewAuthenticationRepositoryInterface() *authenticationRepositoryInterface {
-	return &authenticationRepositoryInterface{}
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
+)
+
+func NewAuthenticationRepositoryInterface(redis *redis.Client) *authenticationRepositoryInterface {
+	return &authenticationRepositoryInterface{
+		redis: redis,
+	}
 }
 
 type AuthenticationRepositoryInterface interface {
-	StoreVerifier(state, verifier string) (success bool, err error)
+	SetVerifier(ctx *gin.Context, state, verifier string) (statusCmd *redis.StatusCmd)
 }
 
-type authenticationRepositoryInterface struct{}
+type authenticationRepositoryInterface struct {
+	redis *redis.Client
+}

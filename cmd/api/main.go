@@ -5,8 +5,11 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/MouraGabriel53/teste-oauth-go/internal/config"
-	authcontroller "github.com/MouraGabriel53/teste-oauth-go/internal/controller/authController"
+	"github.com/MouraGabriel53/teste-oauth-go/internal/configuration"
+	authcontroller "github.com/MouraGabriel53/teste-oauth-go/internal/controller/auth_controller"
+	"github.com/MouraGabriel53/teste-oauth-go/internal/controller/routes"
+	authrepository "github.com/MouraGabriel53/teste-oauth-go/internal/model/repository/auth_repository"
+	authservice "github.com/MouraGabriel53/teste-oauth-go/internal/model/service/auth_service"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
@@ -26,16 +29,19 @@ type GoogleUser struct {
 
 func main() {
 
-	err := godotenv.Load(".env")
-	if err != nil {
-		panic(err)
-	}
+	_ = godotenv.Load(".env")
 
 	r := gin.Default()
 
-	conf := config.ConfigurateOauth2()
+	googleAuth := configuration.ConfigureOauth2()
 
-	authController := authcontroller.NewAuthenticationUser()
+	redis := configuration.ConfigureRedisClient()
+
+	authrepository := authrepository.NewAuthenticationRepositoryInterface(redis)
+	authservice := authservice.NewAuthenticationServiceInterface(authrepository, googleAuth)
+	authController := authcontroller.NewAuthenticationContollerInterface(authservice)
+
+	routes.AuthRoutes(r, authController.AuthenticateUser)
 
 	v1 := r.Group("/auth")
 	{
@@ -55,7 +61,7 @@ func main() {
 
 			VerifierMap.Delete(state)
 
-			token, err := conf.Exchange(ctx, code, oauth2.VerifierOption(verifier))
+			token, err := googleAuth.Exchange(ctx, code, oauth2.VerifierOption(verifier))
 			if err != nil {
 				ctx.JSON(http.StatusBadRequest, gin.H{
 					"error": "invalid code",
@@ -63,7 +69,7 @@ func main() {
 				return
 			}
 
-			client := conf.Client(ctx, token)
+			client := googleAuth.Client(ctx, token)
 			resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
 			if err != nil {
 				ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -90,5 +96,5 @@ func main() {
 		})
 	}
 
-	r.Run(":8080")
+	r.Run(":8000")
 }
