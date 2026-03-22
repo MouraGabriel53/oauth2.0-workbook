@@ -15,7 +15,7 @@ func NewAuthenticationServiceInterface(repository authrepository.AuthenticationR
 
 type AuthenticationServiceInterface interface {
 	AuthenticateUser(ctx *gin.Context)
-	Callback(ctx *gin.Context)
+	Callback(ctx *gin.Context) (GoogleResponse *GoogleUser)
 }
 
 type authenticationServiceInterface struct {
