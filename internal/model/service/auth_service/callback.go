@@ -34,26 +34,26 @@ func (as *authenticationServiceInterface) Callback(ctx *gin.Context) (GoogleResp
 
 	verifier, err := redisVerifier.Result()
 	if err != nil {
-		logger.Error("Error trying to call GetVerifier repository", err, zap.String("journey", "AuthenticateUser"))
+		logger.Error("GetVerifier returned an error", err, zap.String("journey", "AuthenticateUser"))
 		return &GoogleUser{}, resterror.NewInternalServerError("couldn't get verifier from Redis")
 	}
 
 	token, err := as.googleAuth.Exchange(ctx, code, oauth2.VerifierOption(verifier))
 	if err != nil {
-		logger.Error("Error trying to call googleAuth.Exchange function", err, zap.String("journey", "AuthenticateUser"))
+		logger.Error("googleAuth.Exchange returned an error", err, zap.String("journey", "AuthenticateUser"))
 		return &GoogleUser{}, resterror.NewInternalServerError("couldn't convert an authorization code into a token")
 	}
 
 	client := as.googleAuth.Client(ctx, token)
 	resp, err := client.Get(URL)
 	if err != nil {
-		logger.Error("Error trying to call client.Get function", err, zap.String("journey", "AuthenticateUser"))
+		logger.Error("client.Get returned an error", err, zap.String("journey", "AuthenticateUser"))
 		return &GoogleUser{}, resterror.NewInternalServerError("couldn't request user information")
 	}
 	defer resp.Body.Close()
 
 	if err := json.NewDecoder(resp.Body).Decode(&GoogleResponse); err != nil {
-		logger.Error("Error trying to decode resp.Body", err, zap.String("journey", "AuthenticateUser"))
+		logger.Error("json.NewDecoder returned an error", err, zap.String("journey", "AuthenticateUser"))
 		return &GoogleUser{}, resterror.NewInternalServerError("couldn't read response user information")
 	}
 

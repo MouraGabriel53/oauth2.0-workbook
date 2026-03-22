@@ -18,7 +18,7 @@ var (
 )
 
 func NewRedisClient() *redis.Client {
-	logger.Info("Init NewRedisClient function", zap.String("journey", "database"))
+	logger.Info("Init NewRedisClient function", zap.String("journey", "Configuration"))
 
 	return redis.NewClient(&redis.Options{
 		Addr:     os.Getenv(REDIS_ADDRESS),
@@ -30,16 +30,16 @@ func NewRedisClient() *redis.Client {
 }
 
 func VerifyRedisConnection(rdb *redis.Client) (err error) {
-	logger.Info("Init VerifyRedisConnection function", zap.String("journey", "database"))
+	logger.Info("Init VerifyRedisConnection function", zap.String("journey", "Configuration"))
 
 	ctx := context.Background()
 
 	if err = rdb.Ping(ctx).Err(); err != nil {
-		logger.Error("Ping function returned an error", err, zap.String("journey", "database"))
+		logger.Error("Ping function returned an error", err, zap.String("journey", "Configuration"))
 		return err
 	}
 
-	logger.Info("VerifyRedisConnection executed successfully", zap.String("journey", "database"))
+	logger.Info("VerifyRedisConnection executed successfully", zap.String("journey", "Configuration"))
 
 	return nil
 }

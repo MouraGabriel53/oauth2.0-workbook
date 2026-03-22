@@ -29,6 +29,8 @@ import (
 //ADICIONAR REDIS NO COMPOSE OK
 
 var (
+	ENV_PATH = ".env"
+	GIN_MODE      = "GIN_MODE"
 	API_PORT      = "API_PORT"
 	ALLOW_ORIGINS = []string{"*"}
 )
@@ -36,7 +38,9 @@ var (
 func main() {
 	logger.Info("Initializing application")
 
-	_ = godotenv.Load(".env")
+	_ = godotenv.Load(ENV_PATH)
+
+	gin.SetMode(os.Getenv(GIN_MODE))
 
 	r := gin.Default()
 

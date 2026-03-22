@@ -14,7 +14,7 @@ var (
 )
 
 func (ar *authenticationRepositoryInterface) SetVerifier(ctx *gin.Context, state, verifier string) (statusCmd *redis.StatusCmd) {
-	logger.Info("Init SetVerifier", zap.String("journey", "AuthenticateUser"))
+	logger.Info("Init SetVerifier function", zap.String("journey", "AuthenticateUser"))
 
 	return ar.redis.Set(ctx, state, verifier, time.Duration(EXPIRATION))
 }

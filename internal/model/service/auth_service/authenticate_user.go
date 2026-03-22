@@ -21,7 +21,7 @@ func (as *authenticationServiceInterface) AuthenticateUser(ctx *gin.Context) (ur
 	state := utils.GenerateRandomString(RANDOM_STRING_LENGHT)
 
 	if statusCmd := as.repository.SetVerifier(ctx, state, verifier); statusCmd.Err() != nil {
-		logger.Error("Error trying to call SetVerifier repository", statusCmd.Err(), zap.String("journey", "AuthenticateUser"))
+		logger.Error("SetVerifier returned an error", statusCmd.Err(), zap.String("journey", "AuthenticateUser"))
 		return "", resterror.NewInternalServerError("couldn't set verifier")
 	}
 

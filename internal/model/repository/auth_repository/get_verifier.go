@@ -8,7 +8,7 @@ import (
 )
 
 func (ar *authenticationRepositoryInterface) GetVerifier(ctx *gin.Context, state string) (stringCmd *redis.StringCmd) {
-	logger.Info("Init GetVerifier", zap.String("journey", "AuthenticateUser"))
+	logger.Info("Init GetVerifier function", zap.String("journey", "AuthenticateUser"))
 
 	return ar.redis.Get(ctx, state)
 }

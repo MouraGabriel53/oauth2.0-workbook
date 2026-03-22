@@ -15,7 +15,7 @@ var (
 )
 
 func NewOauth2Handler() *oauth2.Config {
-	logger.Info("Init NewOauth2Handler function", zap.String("journey", "auth"))
+	logger.Info("Init NewOauth2Handler function", zap.String("journey", "Configuration"))
 
 	return &oauth2.Config{
 		ClientID:     os.Getenv(CLIENT_ID),
