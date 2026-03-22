@@ -2,9 +2,11 @@ package authservice
 
 import (
 	"encoding/json"
-	"log/slog"
 
+	"github.com/MouraGabriel53/teste-oauth-go/internal/configuration/logger"
+	resterror "github.com/MouraGabriel53/teste-oauth-go/internal/configuration/rest_error"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 )
 
@@ -19,10 +21,12 @@ type GoogleUser struct {
 }
 
 var (
-	URL            = "https://www.googleapis.com/oauth2/v2/userinfo"
+	URL = "https://www.googleapis.com/oauth2/v2/userinfo"
 )
 
-func (as *authenticationServiceInterface) Callback(ctx *gin.Context) (GoogleResponse *GoogleUser) {
+func (as *authenticationServiceInterface) Callback(ctx *gin.Context) (GoogleResponse *GoogleUser, restError *resterror.RestError) {
+	logger.Info("Init Callback service", zap.String("journey", "AuthenticateUser"))
+
 	code := ctx.Query("code")
 	state := ctx.Query("state")
 
@@ -30,24 +34,30 @@ func (as *authenticationServiceInterface) Callback(ctx *gin.Context) (GoogleResp
 
 	verifier, err := redisVerifier.Result()
 	if err != nil {
-		slog.Error("error to get verifier from redis", "err", err)
+		logger.Error("Error trying to call GetVerifier repository", err, zap.String("journey", "AuthenticateUser"))
+		return &GoogleUser{}, resterror.NewInternalServerError("couldn't get verifier from Redis")
 	}
 
 	token, err := as.googleAuth.Exchange(ctx, code, oauth2.VerifierOption(verifier))
 	if err != nil {
-		slog.Error("invalid code", "err", err)
+		logger.Error("Error trying to call googleAuth.Exchange function", err, zap.String("journey", "AuthenticateUser"))
+		return &GoogleUser{}, resterror.NewInternalServerError("couldn't convert an authorization code into a token")
 	}
 
 	client := as.googleAuth.Client(ctx, token)
 	resp, err := client.Get(URL)
 	if err != nil {
-		slog.Error("error to request user information", "err", err)
+		logger.Error("Error trying to call client.Get function", err, zap.String("journey", "AuthenticateUser"))
+		return &GoogleUser{}, resterror.NewInternalServerError("couldn't request user information")
 	}
 	defer resp.Body.Close()
 
 	if err := json.NewDecoder(resp.Body).Decode(&GoogleResponse); err != nil {
-		slog.Error("error to read body", "err", err)
+		logger.Error("Error trying to decode resp.Body", err, zap.String("journey", "AuthenticateUser"))
+		return &GoogleUser{}, resterror.NewInternalServerError("couldn't read response user information")
 	}
 
-	return GoogleResponse
+	logger.Info("Callback service executed successfully", zap.String("journey", "AuthenticateUser"))
+
+	return GoogleResponse, nil
 }

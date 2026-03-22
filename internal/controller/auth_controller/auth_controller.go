@@ -5,12 +5,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewAuthenticationContollerInterface(service authservice.AuthenticationServiceInterface) *authenticationControllerInterface {
-	return &authenticationControllerInterface{
-		service: service,
-	}
-}
-
 type AuthenticationControllerInterface interface {
 	AuthenticateUser(ctx *gin.Context)
 	Callback(ctx *gin.Context)
@@ -18,4 +12,10 @@ type AuthenticationControllerInterface interface {
 
 type authenticationControllerInterface struct {
 	service authservice.AuthenticationServiceInterface
+}
+
+func NewAuthenticationContollerInterface(service authservice.AuthenticationServiceInterface) *authenticationControllerInterface {
+	return &authenticationControllerInterface{
+		service: service,
+	}
 }

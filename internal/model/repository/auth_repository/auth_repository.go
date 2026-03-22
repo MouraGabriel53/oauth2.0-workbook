@@ -5,12 +5,6 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func NewAuthenticationRepositoryInterface(redis *redis.Client) *authenticationRepositoryInterface {
-	return &authenticationRepositoryInterface{
-		redis: redis,
-	}
-}
-
 type AuthenticationRepositoryInterface interface {
 	SetVerifier(ctx *gin.Context, state, verifier string) (statusCmd *redis.StatusCmd)
 	GetVerifier(ctx *gin.Context, state string) (stringCmd *redis.StringCmd)
@@ -18,4 +12,10 @@ type AuthenticationRepositoryInterface interface {
 
 type authenticationRepositoryInterface struct {
 	redis *redis.Client
+}
+
+func NewAuthenticationRepositoryInterface(redis *redis.Client) *authenticationRepositoryInterface {
+	return &authenticationRepositoryInterface{
+		redis: redis,
+	}
 }

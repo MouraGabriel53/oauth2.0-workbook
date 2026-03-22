@@ -1,8 +1,10 @@
-package configuration
+package auth
 
 import (
 	"os"
 
+	"github.com/MouraGabriel53/teste-oauth-go/internal/configuration/logger"
+	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
@@ -13,6 +15,8 @@ var (
 )
 
 func ConfigureOauth2() *oauth2.Config {
+	logger.Info("Init ConfigureOauth2 configuration", zap.String("journey", "Configuration"))
+
 	return &oauth2.Config{
 		ClientID:     os.Getenv(CLIENT_ID),
 		ClientSecret: os.Getenv(CLIENT_SECRET),

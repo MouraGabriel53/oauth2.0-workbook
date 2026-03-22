@@ -2,6 +2,8 @@ package main
 
 import (
 	"github.com/MouraGabriel53/teste-oauth-go/internal/configuration"
+	"github.com/MouraGabriel53/teste-oauth-go/internal/configuration/database"
+	"github.com/MouraGabriel53/teste-oauth-go/internal/configuration/logger"
 	authcontroller "github.com/MouraGabriel53/teste-oauth-go/internal/controller/auth_controller"
 	authrepository "github.com/MouraGabriel53/teste-oauth-go/internal/model/repository/auth_repository"
 	authservice "github.com/MouraGabriel53/teste-oauth-go/internal/model/service/auth_service"
@@ -11,26 +13,30 @@ import (
 
 //MELHORAR AS CONFIGURAÇÕES (ENV) | ADICIONAR SERVER PORT, URI PARA PASSAR NO RUNTIME DO DOCKER
 //ABSTRAIR INICIALIZAÇÃO DE DEPENDÊNCIAS
-//ABSTRAIR CRIAÇÃO DE ROTAS
+//ABSTRAIR CRIAÇÃO DE ROTA
 //ADICIONAR LOGIN/LOGOUT COM JWT (REFRESH TOKENS)
-//ADICIONAR REDIS NO COMPOSE
 //ADICIONAR POSTGRE NO COMPOSE
 //CRIAR ROTA E CRUD DE ALGO
-//CONFIGURAR LOG (UBER-ZAP)
 //CONFIGURAR DB
-//CONFIGURAR ERROS
+//OBSERVALIDADE
+//VIZUALIZAÇÃO DE LOG
+
+//CONFIGURAR ERROS OK
+//CONFIGURAR LOG (UBER-ZAP) OK
+//ADICIONAR REDIS NO COMPOSE OK
 
 func main() {
+	logger.Info("Initializing application")
 
 	_ = godotenv.Load(".env")
 
 	r := gin.Default()
 
-	googleAuth := configuration.ConfigureOauth2()
+	rdb := database.NewRedisClient()
 
-	redis := configuration.ConfigureRedisClient()
+	rdb.Ping()
 
-	authrepository := authrepository.NewAuthenticationRepositoryInterface(redis)
+	authrepository := authrepository.NewAuthenticationRepositoryInterface(rdb)
 	authservice := authservice.NewAuthenticationServiceInterface(authrepository, googleAuth)
 	authController := authcontroller.NewAuthenticationContollerInterface(authservice)
 
