@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/MouraGabriel53/teste-oauth-go/internal/configuration/auth"
@@ -23,15 +24,17 @@ import (
 //CONFIGURAR DB
 //OBSERVALIDADE
 //VIZUALIZAÇÃO DE LOG
+//CONFIGURAR TIMEOUT, RATE LIMITE E GRACEFULL SHUTDOWN
+//CONFIGUURAR HEALTHCHEKC, TRY PARA SUBIR O REDIS
 
 //CONFIGURAR ERROS OK
 //CONFIGURAR LOG (UBER-ZAP) OK
 //ADICIONAR REDIS NO COMPOSE OK
 
 var (
-	ENV_PATH = ".env"
+	ENV_PATH      = "../../../.env"
 	GIN_MODE      = "GIN_MODE"
-	API_PORT      = "API_PORT"
+	API_PORT      = "DOCKER_API_PORT"
 	ALLOW_ORIGINS = []string{"*"}
 )
 
@@ -64,5 +67,9 @@ func main() {
 		v1.GET("/callback", authController.Callback)
 	}
 
-	r.Run(os.Getenv(API_PORT))
+	apiPort := fmt.Sprintf(":%s", os.Getenv(API_PORT))
+
+	r.Run(apiPort)
+
+	logger.Info("Exiting gracefully")
 }

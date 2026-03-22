@@ -1,10 +1,16 @@
 services:
   oauth2-api:
-    build: .
+    build: 
+      context: .
+      dockerfile: dockerfile
+      args:
+        - DOCKER_GOLANG_VERSION=${DOCKER_GOLANG_VERSION}
+        - DOCKER_API_USER=${DOCKER_API_USER}
+        - DOCKER_API_PORT=${DOCKER_API_PORT}
     ports:
-      - "8000:8000"
+      - "${DOCKER_API_PORT}:${DOCKER_API_PORT}"
     env_file:
-      - ./cmd/api/.env
+      - .env
     depends_on:
       redis:
         condition: service_healthy
@@ -13,14 +19,14 @@ services:
     image: redis/redis-stack:latest
     restart: unless-stopped
     ports:
-      - "6379:6379"
-      - "8001:8001"
+      - ${DOCKER_REDIS_PORT}:6379
+      - ${DOCKER_REDIS_INSIGTH_PORT}:8001
     environment:
-      - REDIS_ARGS=--requirepass redis
+      - REDIS_ARGS=--user default off --user ${REDIS_USERNAME} on >${REDIS_PASSWORD} ~* +@all
     # volumes:
     #   - redis_cache:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "redis", "ping"]
+      test: ["CMD", "redis-cli", "--user", "${REDIS_USERNAME}", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
