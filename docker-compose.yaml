@@ -1,0 +1,29 @@
+services:
+  oauth2-api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./cmd/api/.env
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  redis: 
+    image: redis/redis-stack:latest
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    environment:
+      - REDIS_ARGS=--requirepass redis
+    # volumes:
+    #   - redis_cache:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+# volumes:
+#   redis_cache:

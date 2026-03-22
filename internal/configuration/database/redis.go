@@ -12,6 +12,7 @@ import (
 
 var (
 	REDIS_ADDRESS  = "REDIS_ADDRESS"
+	REDIS_USERNAME = "REDIS_USERNAME"
 	REDIS_PASSWORD = "REDIS_PASSWORD"
 	REDIS_DB       = 0
 	REDIS_PROTOCOL = 2
@@ -27,6 +28,7 @@ func NewRedisClient() *RedisClient {
 	return &RedisClient{
 		rdb: redis.NewClient(&redis.Options{
 			Addr:     os.Getenv(REDIS_ADDRESS),
+			Username: os.Getenv(REDIS_USERNAME),
 			Password: os.Getenv(REDIS_PASSWORD),
 			DB:       REDIS_DB,
 			Protocol: REDIS_PROTOCOL,

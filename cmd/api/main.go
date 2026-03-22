@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/MouraGabriel53/teste-oauth-go/internal/configuration"
 	"github.com/MouraGabriel53/teste-oauth-go/internal/configuration/database"
 	"github.com/MouraGabriel53/teste-oauth-go/internal/configuration/logger"
@@ -25,6 +27,10 @@ import (
 //CONFIGURAR LOG (UBER-ZAP) OK
 //ADICIONAR REDIS NO COMPOSE OK
 
+var (
+	API_PORT = "API_PORT"
+)
+
 func main() {
 	logger.Info("Initializing application")
 
@@ -46,5 +52,5 @@ func main() {
 		v1.GET("/callback", authController.Callback)
 	}
 
-	r.Run(":8000")
+	r.Run(os.Getenv(API_PORT))
 }
