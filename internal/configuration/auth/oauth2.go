@@ -14,7 +14,7 @@ var (
 	CLIENT_SECRET = "CLIENT_SECRET"
 )
 
-func ConfigureOauth2() *oauth2.Config {
+func NewOauth2Handler() *oauth2.Config {
 	logger.Info("Init ConfigureOauth2 configuration", zap.String("journey", "Configuration"))
 
 	return &oauth2.Config{

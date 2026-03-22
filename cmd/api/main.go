@@ -3,10 +3,11 @@ package main
 import (
 	"os"
 
-	"github.com/MouraGabriel53/teste-oauth-go/internal/configuration"
+	"github.com/MouraGabriel53/teste-oauth-go/internal/configuration/auth"
 	"github.com/MouraGabriel53/teste-oauth-go/internal/configuration/database"
 	"github.com/MouraGabriel53/teste-oauth-go/internal/configuration/logger"
 	authcontroller "github.com/MouraGabriel53/teste-oauth-go/internal/controller/auth_controller"
+	"github.com/MouraGabriel53/teste-oauth-go/internal/middleware"
 	authrepository "github.com/MouraGabriel53/teste-oauth-go/internal/model/repository/auth_repository"
 	authservice "github.com/MouraGabriel53/teste-oauth-go/internal/model/service/auth_service"
 	"github.com/gin-gonic/gin"
@@ -28,7 +29,8 @@ import (
 //ADICIONAR REDIS NO COMPOSE OK
 
 var (
-	API_PORT = "API_PORT"
+	API_PORT      = "API_PORT"
+	ALLOW_ORIGINS = []string{"*"}
 )
 
 func main() {
@@ -38,12 +40,16 @@ func main() {
 
 	r := gin.Default()
 
+	r.Use(middleware.NewCorsHandler(ALLOW_ORIGINS))
+
+	oauth2Handler := auth.NewOauth2Handler()
+
 	rdb := database.NewRedisClient()
 
 	rdb.Ping()
 
 	authrepository := authrepository.NewAuthenticationRepositoryInterface(rdb)
-	authservice := authservice.NewAuthenticationServiceInterface(authrepository, googleAuth)
+	authservice := authservice.NewAuthenticationServiceInterface(authrepository, oauth2Handler)
 	authController := authcontroller.NewAuthenticationContollerInterface(authservice)
 
 	v1 := r.Group("/auth")
