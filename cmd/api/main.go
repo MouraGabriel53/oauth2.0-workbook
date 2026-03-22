@@ -46,7 +46,9 @@ func main() {
 
 	rdb := database.NewRedisClient()
 
-	rdb.Ping()
+	if err := database.VerifyRedisConnection(rdb); err != nil {
+		panic(err)
+	}
 
 	authrepository := authrepository.NewAuthenticationRepositoryInterface(rdb)
 	authservice := authservice.NewAuthenticationServiceInterface(authrepository, oauth2Handler)

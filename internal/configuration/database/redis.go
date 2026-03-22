@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/MouraGabriel53/teste-oauth-go/internal/configuration/logger"
-	resterror "github.com/MouraGabriel53/teste-oauth-go/internal/configuration/rest_error"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
@@ -18,33 +17,29 @@ var (
 	REDIS_PROTOCOL = 2
 )
 
-type RedisClient struct {
-	rdb *redis.Client
+func NewRedisClient() *redis.Client {
+	logger.Info("Init NewRedisClient function", zap.String("journey", "database"))
+
+	return redis.NewClient(&redis.Options{
+		Addr:     os.Getenv(REDIS_ADDRESS),
+		Username: os.Getenv(REDIS_USERNAME),
+		Password: os.Getenv(REDIS_PASSWORD),
+		DB:       REDIS_DB,
+		Protocol: REDIS_PROTOCOL,
+	})
 }
 
-func NewRedisClient() *RedisClient {
-	logger.Info("Init NewRedisClient database", zap.String("journey", "Configuration"))
-
-	return &RedisClient{
-		rdb: redis.NewClient(&redis.Options{
-			Addr:     os.Getenv(REDIS_ADDRESS),
-			Username: os.Getenv(REDIS_USERNAME),
-			Password: os.Getenv(REDIS_PASSWORD),
-			DB:       REDIS_DB,
-			Protocol: REDIS_PROTOCOL,
-		}),
-	}
-}
-
-func (rc *RedisClient) Ping() {
-	logger.Info("Init Ping redis database", zap.String("journey", "Configuration"))
+func VerifyRedisConnection(rdb *redis.Client) (err error) {
+	logger.Info("Init VerifyRedisConnection function", zap.String("journey", "database"))
 
 	ctx := context.Background()
 
-	if statusCmd := rc.rdb.Ping(ctx); statusCmd.Err() != nil {
-		logger.Error("Error trying to call Ping", statusCmd.Err(), zap.String("journey", "Configuration"))
-		resterror.NewInternalServerError("Error trying to connect with Redis")
+	if err = rdb.Ping(ctx).Err(); err != nil {
+		logger.Error("Ping function returned an error", err, zap.String("journey", "database"))
+		return err
 	}
 
-	logger.Info("Ping redis databse executed successfully", zap.String("journey", "Configuration"))
+	logger.Info("VerifyRedisConnection executed successfully", zap.String("journey", "database"))
+
+	return nil
 }
