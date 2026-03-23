@@ -10,7 +10,7 @@ import (
 )
 
 func NewCorsHandler(allowOrigins []string) gin.HandlerFunc {
-	logger.Info("Init NewCorsConfig gin", zap.String("journey", "Configuration"))
+	logger.Info("Init NewCorsConfig function", zap.String("journey", "Configuration"))
 
 	return cors.New(cors.Config{
 		AllowOrigins:  allowOrigins,

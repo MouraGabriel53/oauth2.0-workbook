@@ -2,7 +2,9 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"time"
 
 	"github.com/MouraGabriel53/teste-oauth-go/internal/configuration/logger"
 	"github.com/redis/go-redis/v9"
@@ -29,17 +31,44 @@ func NewRedisClient() *redis.Client {
 	})
 }
 
-func VerifyRedisConnection(rdb *redis.Client) (err error) {
-	logger.Info("Init VerifyRedisConnection function", zap.String("journey", "Configuration"))
+func verifyRedisConnection(ctx context.Context, timeout time.Duration, rdb *redis.Client) (err error) {
+	logger.Info("Init verifyRedisConnection function", zap.String("journey", "Configuration"))
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	if err = rdb.Ping(ctx).Err(); err != nil {
 		logger.Error("Ping function returned an error", err, zap.String("journey", "Configuration"))
 		return err
 	}
 
-	logger.Info("VerifyRedisConnection executed successfully", zap.String("journey", "Configuration"))
+	logger.Info("verifyRedisConnection executed successfully", zap.String("journey", "Configuration"))
 
 	return nil
+}
+
+func RetryRedisConnection(ctx context.Context, timeout time.Duration, rdb *redis.Client, retries int) (err error) {
+	logger.Info("Init RetryRedisConnection function", zap.String("journey", "Configuration"))
+
+	for i := range retries {
+		if err = verifyRedisConnection(ctx, timeout, rdb); err == nil {
+			logger.Info("RetryRedisConnection executed successfully", zap.String("journey", "Configuration"))
+			return nil
+		} else {
+			message := fmt.Sprintf("Attempt %d/%d failed", i, retries)
+			logger.Error(message, err, zap.String("journey", "Configuration"))
+		}
+
+		select {
+		case <-time.After(timeout):
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
+
+	err = fmt.Errorf("Faield to connect with Redis database after %d attempts", retries)
+
+	logger.Error("RetryRedisConnection finished with error", err, zap.String("journey", "Configuration"))
+
+	return err
 }

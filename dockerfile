@@ -11,7 +11,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /api-exec ./cmd/api/main.go
 
 FROM alpine:latest
 
-ARG DOCKER_API_USER=golang
+ARG DOCKER_API_USER=admin
 ARG DOCKER_API_PORT=8000
 
 RUN adduser -D ${DOCKER_API_USER}

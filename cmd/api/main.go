@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/MouraGabriel53/teste-oauth-go/internal/configuration/auth"
 	"github.com/MouraGabriel53/teste-oauth-go/internal/configuration/database"
@@ -25,8 +27,8 @@ import (
 //OBSERVALIDADE
 //VIZUALIZAÇÃO DE LOG
 //CONFIGURAR TIMEOUT, RATE LIMITE E GRACEFULL SHUTDOWN
-//CONFIGUURAR HEALTHCHEKC, TRY PARA SUBIR O REDIS
 
+//CONFIGUURAR HEALTHCHEKC, TRY PARA SUBIR O REDIS OK
 //CONFIGURAR ERROS OK
 //CONFIGURAR LOG (UBER-ZAP) OK
 //ADICIONAR REDIS NO COMPOSE OK
@@ -51,11 +53,21 @@ func main() {
 
 	oauth2Handler := auth.NewOauth2Handler()
 
+	//===============================================================================
+
 	rdb := database.NewRedisClient()
 
-	if err := database.VerifyRedisConnection(rdb); err != nil {
+	ctx := context.Background()
+
+	timeout := time.Duration(10 * time.Second)
+
+	retries := 5
+
+	if err := database.RetryRedisConnection(ctx, timeout, rdb, retries); err != nil {
 		panic(err)
 	}
+
+	//===============================================================================
 
 	authrepository := authrepository.NewAuthenticationRepositoryInterface(rdb)
 	authservice := authservice.NewAuthenticationServiceInterface(authrepository, oauth2Handler)
