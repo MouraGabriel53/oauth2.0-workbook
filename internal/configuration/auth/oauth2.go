@@ -12,6 +12,7 @@ import (
 var (
 	CLIENT_ID     = "CLIENT_ID"
 	CLIENT_SECRET = "CLIENT_SECRET"
+	REDIRECT_URL  = "REDIRECT_URL"
 )
 
 func NewOauth2Handler() *oauth2.Config {
@@ -21,7 +22,7 @@ func NewOauth2Handler() *oauth2.Config {
 		ClientID:     os.Getenv(CLIENT_ID),
 		ClientSecret: os.Getenv(CLIENT_SECRET),
 		Endpoint:     google.Endpoint,
-		RedirectURL:  "http://localhost:8000/auth/callback",
+		RedirectURL:  os.Getenv(REDIRECT_URL),
 		Scopes: []string{
 			"https://www.googleapis.com/auth/userinfo.email",
 			"https://www.googleapis.com/auth/userinfo.profile",
