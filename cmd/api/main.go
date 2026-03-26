@@ -43,8 +43,6 @@ var (
 func main() {
 	logger.Info("Initializing application")
 
-	
-
 	// _ = godotenv.Load(ENV_PATH)
 
 	//===============================================================================

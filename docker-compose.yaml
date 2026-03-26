@@ -13,8 +13,8 @@ services:
         condition: service_healthy     
     develop: 
       watch:
-        action: rebuild
-        path: ./    
+        - action: rebuild
+          path: ./    
 
   redis: 
     image: redis/redis-stack:latest
@@ -32,7 +32,7 @@ services:
   postgres:
     image: postgres:17-alpine
     ports:
-      - "5432:5432" 
+      - "5433:5432" 
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
